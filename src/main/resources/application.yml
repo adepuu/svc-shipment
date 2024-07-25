@@ -1,6 +1,11 @@
 server:
   port: ${APP_PORT}
 spring:
+  kafka:
+    bootstrap-servers: ${KAFKA_BROKER}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
   application:
     name: svc-order
   ## Spring datasource config
@@ -21,4 +26,5 @@ management:
   endpoints:
     web:
       exposure:
-        include: ["prometheus", "health"]
+        include: [ "prometheus", "health" ]
+  

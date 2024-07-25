@@ -10,6 +10,7 @@ import com.adepuu.svcorder.repository.OrderItemsRepository;
 import com.adepuu.svcorder.repository.OrderRepository;
 import com.adepuu.svcorder.repository.ProductRepository;
 import com.adepuu.svcorder.service.OrderService;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,13 +24,16 @@ public class OrderServiceImpl implements OrderService {
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
     private final OrderItemsRepository orderItemRepository;
+    private final KafkaTemplate<String, String> kafkaTemplate;
 
     public OrderServiceImpl(ProductRepository productRepository,
                             OrderRepository orderRepository,
-                            OrderItemsRepository orderItemRepository) {
+                            OrderItemsRepository orderItemRepository,
+                            KafkaTemplate<String, String> kafkaTemplate) {
         this.productRepository = productRepository;
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
+        this.kafkaTemplate = kafkaTemplate;
     }
 
     @Transactional
@@ -78,6 +82,16 @@ public class OrderServiceImpl implements OrderService {
             orderItemRepository.save(item);
         }
 
+        // Publish Kafka message for shipment service
+        publishShipmentMessage(order);
+
         return order;
+    }
+
+
+    private void publishShipmentMessage(Order order) {
+        String message = String.format("{\"orderId\": %d, \"customerId\": %d, \"status\": \"%s\"}",
+                order.getId(), order.getCustomerId(), order.getStatus());
+        kafkaTemplate.send("order-create", message);
     }
 }
