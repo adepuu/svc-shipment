@@ -1,0 +1,24 @@
+server:
+  port: ${APP_PORT}
+spring:
+  application:
+    name: svc-order
+  ## Spring datasource config
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: ["prometheus", "health"]
